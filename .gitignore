@@ -1,0 +1,8 @@
+.env
+.mongodb/
+.venv/
+.pytest_cache/
+.deepeval/
+.idea/
+__pycache__/
+*.py[cod]

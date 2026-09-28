@@ -2,6 +2,9 @@
 .mongodb/
 .venv/
 .pytest_cache/
+pytest-report.html
+allure-results/
+allure-report/
 .deepeval/
 .idea/
 __pycache__/

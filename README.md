@@ -36,16 +36,17 @@ key. `ToolCorrectnessMetric` is configured for exact tool matching and
 
 ## Run
 
-1. Copy `.env.example` to `.env` and set the connection values and OpenAI key.
-2. Ensure the collection has a document whose `upcId` matches
+1. Set up and start MongoDB as described in [Local MongoDB setup](#local-mongodb-setup).
+2. Copy `.env.example` to `.env` and set the connection values and OpenAI key.
+3. Ensure the collection has a document whose `upcId` matches
    `PRODUCT_AGENT_SAMPLE_UPC` (the default is `0001960004580`).
-3. Ask a question:
+4. Ask a question:
 
    ```powershell
    python -m product_agent.agent "What is the size of UPC 0001960004580?"
    ```
 
-4. Run the local evaluation (15 Goldens generated from the actual MongoDB
+5. Run the local evaluation (15 Goldens generated from the actual MongoDB
    document, so expected values are never fabricated):
 
    ```powershell
@@ -66,18 +67,27 @@ The dataset reads the live sample document when it is built.
 
 This workspace is configured for `mongodb://localhost:27017`, database
 `product_agent`, and collection `ProductUPC`. The local runtime and data files
-are stored under `.mongodb/` and excluded from source control. The supplied
-document can be safely loaded again (it is an upsert) with:
+are stored under `.mongodb/` and excluded from source control. On a fresh
+checkout, install the pinned local MongoDB runtime first:
 
 ```powershell
-python scripts/load_product_upc.py
+.\scripts\setup_mongodb.ps1
 ```
 
-The loader creates a unique index on `upcId`. If the local `mongod` process is
-stopped, start it again from the project root:
+The script downloads MongoDB 4.4.29 from MongoDB's official download host,
+extracts it into `.mongodb/server/`, and creates `.mongodb/data/`. Then start
+the server in a separate PowerShell window:
 
 ```powershell
 & .\.mongodb\server\mongodb-win32-x86_64-windows-4.4.29\bin\mongod.exe `
   --dbpath .\.mongodb\data --bind_ip 127.0.0.1 --port 27017 `
   --logpath .\.mongodb\mongod.log
 ```
+
+The supplied document can be safely loaded again (it is an upsert) with:
+
+```powershell
+python scripts/load_product_upc.py
+```
+
+The loader creates a unique index on `upcId`.

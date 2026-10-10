@@ -65,12 +65,12 @@ The part before `::` is the file. The part after `::` is the function. That stri
 
 These are not tests:
 
-| Name | Why pytest ignores it |
-| --- | --- |
-| `AnswerRelevancyMetricOffline.py` | The file name does not start with `test_`. |
-| `def _check_product_answer(...)` | The function name starts with `_`, not `test_`. |
-| `tests/conftest.py` | Pytest loads this name for shared setup. It is not a test file. |
-| `product_agent/agent.py` | It is outside `tests/`. `pytest.ini` tells pytest to look only in `tests/`. |
+| Name                              | Why pytest ignores it                                                       |
+| --------------------------------- | --------------------------------------------------------------------------- |
+| `AnswerRelevancyMetricOffline.py` | The file name does not start with `test_`.                                  |
+| `def _check_product_answer(...)`  | The function name starts with `_`, not `test_`.                             |
+| `tests/conftest.py`               | Pytest loads this name for shared setup. It is not a test file.             |
+| `product_agent/agent.py`          | It is outside `tests/`. `pytest.ini` tells pytest to look only in `tests/`. |
 
 `_check_product_answer` in `tests/test_product_agent.py` is a helper. `test_size` is the test, and it calls the helper.
 
@@ -87,16 +87,16 @@ markers =
     evaluation: live product-agent evaluation requiring MongoDB and OpenAI
 ```
 
-| Line | What it does |
-| --- | --- |
-| `testpaths = tests` | Collect tests only from `tests/`. |
-| `python_files = test_*.py` | A test file name must start with `test_`. |
-| `-ra` | After the run, print why each non-passing test was skipped or failed. |
-| `--html=pytest-report.html` | Write the pytest-html report. |
-| `--self-contained-html` | Keep the report styling inside that one file. |
-| `--alluredir=allure-results` | Write Allure's raw result files. |
-| `--clean-alluredir` | Empty `allure-results/` at the start of this run. |
-| `markers` | Register the label `evaluation` so pytest accepts `@pytest.mark.evaluation`. |
+| Line                         | What it does                                                                 |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| `testpaths = tests`          | Collect tests only from `tests/`.                                            |
+| `python_files = test_*.py`   | A test file name must start with `test_`.                                    |
+| `-ra`                        | After the run, print why each non-passing test was skipped or failed.        |
+| `--html=pytest-report.html`  | Write the pytest-html report.                                                |
+| `--self-contained-html`      | Keep the report styling inside that one file.                                |
+| `--alluredir=allure-results` | Write Allure's raw result files.                                             |
+| `--clean-alluredir`          | Empty `allure-results/` at the start of this run.                            |
+| `markers`                    | Register the label `evaluation` so pytest accepts `@pytest.mark.evaluation`. |
 
 `addopts` is applied even when you type a shorter command. `python -m pytest -q` is really pytest plus `-q` plus every option in `addopts`.
 
@@ -155,11 +155,11 @@ def agent(settings: Settings):
     product_agent.close()
 ```
 
-| Fixture | Scope | When it is created |
-| --- | --- | --- |
-| `settings` | `session` | Once for the whole pytest command. |
-| `evaluation_dataset` | `module` | Once for `tests/test_product_agent.py`. All 13 product functions share it. |
-| `agent` | `module` | Once for that same file. All 13 product functions share it. |
+| Fixture              | Scope     | When it is created                                                         |
+| -------------------- | --------- | -------------------------------------------------------------------------- |
+| `settings`           | `session` | Once for the whole pytest command.                                         |
+| `evaluation_dataset` | `module`  | Once for `tests/test_product_agent.py`. All 13 product functions share it. |
+| `agent`              | `module`  | Once for that same file. All 13 product functions share it.                |
 
 `evaluation_dataset` depends on `settings`, so pytest creates settings first.
 
@@ -268,15 +268,15 @@ Pytest does not collect `_check_product_answer`. The test calls it with the name
 
 **N. Build the scorers.** `build_metrics(settings)` creates a fresh list. The judge model is `settings.evaluation_model`.
 
-| Metric | Threshold | A low score means |
-| --- | --- | --- |
-| `TaskCompletionMetric` | 0.70 | The answer does not complete the request. |
-| `ToolCorrectnessMetric` | 1.0 | The called tools are not an exact match to the expected tool, including the UPC argument. |
-| `ArgumentCorrectnessMetric` | 1.0 | The tool arguments are not the expected ones. |
-| `AnswerRelevancyMetric` | 0.70 | The answer drifts off the question. |
-| `PromptAlignmentMetric` | 0.70 | The answer misses the instructions: be concise, do not invent facts, use only tool data, say when a product is missing, and do not expose internal field names. |
-| `FaithfulnessMetric` | 0.70 | A claim is not supported by the tool output. |
-| `GEval` | 0.70 | The custom business check failed: the answer should be accurate, not invented, clear, and concise. |
+| Metric                      | Threshold | A low score means                                                                                                                                               |
+| --------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TaskCompletionMetric`      | 0.70      | The answer does not complete the request.                                                                                                                       |
+| `ToolCorrectnessMetric`     | 1.0       | The called tools are not an exact match to the expected tool, including the UPC argument.                                                                       |
+| `ArgumentCorrectnessMetric` | 1.0       | The tool arguments are not the expected ones.                                                                                                                   |
+| `AnswerRelevancyMetric`     | 0.70      | The answer drifts off the question.                                                                                                                             |
+| `PromptAlignmentMetric`     | 0.70      | The answer misses the instructions: be concise, do not invent facts, use only tool data, say when a product is missing, and do not expose internal field names. |
+| `FaithfulnessMetric`        | 0.70      | A claim is not supported by the tool output.                                                                                                                    |
+| `GEval`                     | 0.70      | The custom business check failed: the answer should be accurate, not invented, clear, and concise.                                                              |
 
 Threshold `1.0` means any extra or missing tool fails tool correctness. The other scores run from 0 to 1 and fail below 0.70. `async_mode=False` keeps the judge calls serial.
 
@@ -292,21 +292,21 @@ Threshold `1.0` means any extra or missing tool fails tool correctness. The othe
 
 ## 10. The 13 product questions
 
-| Function | What it asks | Expected tool |
-| --- | --- | --- |
-| `test_basic_lookup` | What product this UPC is. | `get_product_by_upc` |
-| `test_size` | The size. | `get_product_dimensions` |
-| `test_category` | The category. | `get_product_classification` |
-| `test_classification` | The class. | `get_product_classification` |
-| `test_reviews` | Whether the product can receive reviews. | `get_product_review_eligibility` |
-| `test_sourcing` | Whether supply is DSD or warehouse. | `get_product_sourcing` |
-| `test_multiple_attributes` | Name, size, and category together. | `get_product_by_upc` |
-| `test_summary` | A short summary. | `get_product_by_upc` |
-| `test_group` | The product group. | `get_product_classification` |
-| `test_subclass_1` | The first subclass. | `get_product_classification` |
-| `test_subclass_2` | The second subclass. | `get_product_classification` |
-| `test_concise_size` | The size, with an instruction to be concise. | `get_product_dimensions` |
-| `test_unknown_upc` | UPC `9999999999999`, which is not loaded. | `get_product_by_upc` |
+| Function                   | What it asks                                 | Expected tool                    |
+| -------------------------- | -------------------------------------------- | -------------------------------- |
+| `test_basic_lookup`        | What product this UPC is.                    | `get_product_by_upc`             |
+| `test_size`                | The size.                                    | `get_product_dimensions`         |
+| `test_category`            | The category.                                | `get_product_classification`     |
+| `test_classification`      | The class.                                   | `get_product_classification`     |
+| `test_reviews`             | Whether the product can receive reviews.     | `get_product_review_eligibility` |
+| `test_sourcing`            | Whether supply is DSD or warehouse.          | `get_product_sourcing`           |
+| `test_multiple_attributes` | Name, size, and category together.           | `get_product_by_upc`             |
+| `test_summary`             | A short summary.                             | `get_product_by_upc`             |
+| `test_group`               | The product group.                           | `get_product_classification`     |
+| `test_subclass_1`          | The first subclass.                          | `get_product_classification`     |
+| `test_subclass_2`          | The second subclass.                         | `get_product_classification`     |
+| `test_concise_size`        | The size, with an instruction to be concise. | `get_product_dimensions`         |
+| `test_unknown_upc`         | UPC `9999999999999`, which is not loaded.    | `get_product_by_upc`             |
 
 `test_unknown_upc` expects the text "Product not found." The other expected answers are read from the live sample document. They are not copied into the test file.
 
@@ -358,32 +358,32 @@ START -> agent -> tools (when requested) -> agent -> END
 
 Each other file in `tests/` is one metric example. The file name and the function name both start with `test_`. Pytest finds them by that rule. Nothing scans a folder and launches scripts.
 
-| File | Function | What the name means |
-| --- | --- | --- |
-| `tests/test_answer_relevancy_offline.py` | `test_answer_relevancy_offline` | One `LLMTestCase`, then `evaluate`. |
-| `tests/test_answer_relevancy_online.py` | `test_answer_relevancy_online` | A DeepEval dataset iterator. |
-| `tests/test_argument_correctness_offline.py` | `test_argument_correctness_offline` | One live question. |
-| `tests/test_argument_correctness_online.py` | `test_argument_correctness_online` | A dataset iterator. |
-| `tests/test_faithfulness_offline.py` | `test_faithfulness_offline` | One live question. |
-| `tests/test_faithfulness_online.py` | `test_faithfulness_online` | A dataset iterator. |
-| `tests/test_tool_correctness_offline.py` | `test_tool_correctness_offline` | One live question. |
-| `tests/test_tool_correctness_online.py` | `test_tool_correctness_online` | A dataset iterator. |
-| `tests/test_tool_correctness_synthetic.py` | `test_tool_correctness_synthetic` | A prepared tool call. The agent is not called. |
-| `tests/test_task_completion_offline.py` | `test_task_completion_offline` | One live question. |
-| `tests/test_task_completion_online.py` | `test_task_completion_online` | A dataset iterator. |
-| `tests/test_prompt_alignment.py` | `test_prompt_alignment` | Prompt alignment on one question. |
-| `tests/test_hallucination.py` | `test_hallucination` | Hallucination on one question. |
-| `tests/test_geval.py` | `test_geval` | Custom GEval for classification. |
-| `tests/test_safety_bias.py` | `test_safety_bias` | Bias. |
-| `tests/test_safety_jailbreak.py` | `test_safety_jailbreak` | Jailbreak prompts. |
-| `tests/test_safety_pii_leakage.py` | `test_safety_pii_leakage` | PII leakage. |
-| `tests/test_safety_prompt_injection.py` | `test_safety_prompt_injection` | Prompt injection. |
-| `tests/test_safety_toxicity.py` | `test_safety_toxicity` | Toxicity. |
-| `tests/test_safety_unsafe_output.py` | `test_safety_unsafe_output` | Unsafe-output refusal. |
-| `tests/test_turn_relevancy.py` | `test_turn_relevancy` | A prepared multi-turn conversation. |
-| `tests/test_knowledge_retention.py` | `test_knowledge_retention` | A prepared multi-turn conversation. |
-| `tests/test_conversation_completeness.py` | `test_conversation_completeness` | A prepared multi-turn conversation. |
-| `tests/test_conversational_geval.py` | `test_conversational_geval` | A live multi-turn conversation. |
+| File                                         | Function                            | What the name means                            |
+| -------------------------------------------- | ----------------------------------- | ---------------------------------------------- |
+| `tests/test_answer_relevancy_offline.py`     | `test_answer_relevancy_offline`     | One `LLMTestCase`, then `evaluate`.            |
+| `tests/test_answer_relevancy_online.py`      | `test_answer_relevancy_online`      | A DeepEval dataset iterator.                   |
+| `tests/test_argument_correctness_offline.py` | `test_argument_correctness_offline` | One live question.                             |
+| `tests/test_argument_correctness_online.py`  | `test_argument_correctness_online`  | A dataset iterator.                            |
+| `tests/test_faithfulness_offline.py`         | `test_faithfulness_offline`         | One live question.                             |
+| `tests/test_faithfulness_online.py`          | `test_faithfulness_online`          | A dataset iterator.                            |
+| `tests/test_tool_correctness_offline.py`     | `test_tool_correctness_offline`     | One live question.                             |
+| `tests/test_tool_correctness_online.py`      | `test_tool_correctness_online`      | A dataset iterator.                            |
+| `tests/test_tool_correctness_synthetic.py`   | `test_tool_correctness_synthetic`   | A prepared tool call. The agent is not called. |
+| `tests/test_task_completion_offline.py`      | `test_task_completion_offline`      | One live question.                             |
+| `tests/test_task_completion_online.py`       | `test_task_completion_online`       | A dataset iterator.                            |
+| `tests/test_prompt_alignment.py`             | `test_prompt_alignment`             | Prompt alignment on one question.              |
+| `tests/test_hallucination.py`                | `test_hallucination`                | Hallucination on one question.                 |
+| `tests/test_geval.py`                        | `test_geval`                        | Custom GEval for classification.               |
+| `tests/test_safety_bias.py`                  | `test_safety_bias`                  | Bias.                                          |
+| `tests/test_safety_jailbreak.py`             | `test_safety_jailbreak`             | Jailbreak prompts.                             |
+| `tests/test_safety_pii_leakage.py`           | `test_safety_pii_leakage`           | PII leakage.                                   |
+| `tests/test_safety_prompt_injection.py`      | `test_safety_prompt_injection`      | Prompt injection.                              |
+| `tests/test_safety_toxicity.py`              | `test_safety_toxicity`              | Toxicity.                                      |
+| `tests/test_safety_unsafe_output.py`         | `test_safety_unsafe_output`         | Unsafe-output refusal.                         |
+| `tests/test_turn_relevancy.py`               | `test_turn_relevancy`               | A prepared multi-turn conversation.            |
+| `tests/test_knowledge_retention.py`          | `test_knowledge_retention`          | A prepared multi-turn conversation.            |
+| `tests/test_conversation_completeness.py`    | `test_conversation_completeness`    | A prepared multi-turn conversation.            |
+| `tests/test_conversational_geval.py`         | `test_conversational_geval`         | A live multi-turn conversation.                |
 
 "Offline" means one test case and `evaluate`. "Online" means a DeepEval dataset iterator. "Synthetic" means the inputs are prepared in the test.
 

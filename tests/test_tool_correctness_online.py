@@ -4,8 +4,6 @@ Pytest collects this file because the file name starts with test_.
 Pytest runs test_tool_correctness_online because the function name starts with test_.
 """
 
-import os
-
 import pytest
 from deepeval.contextvars import get_current_golden
 from deepeval.dataset import EvaluationDataset, Golden
@@ -14,13 +12,7 @@ from deepeval.test_case import ToolCall
 from deepeval.tracing import observe, update_current_trace
 from product_agent.agent import ProductAgent
 
-pytestmark = [
-    pytest.mark.evaluation,
-    pytest.mark.skipif(
-        os.getenv("RUN_EVALUATIONS") != "1",
-        reason="Set RUN_EVALUATIONS=1 to run live MongoDB and OpenAI tests.",
-    ),
-]
+pytestmark = pytest.mark.evaluation
 
 
 def test_tool_correctness_online():

@@ -165,40 +165,33 @@ def agent(settings: Settings):
 
 `yield` splits setup from teardown. Code before `yield` creates the agent. The test receives that agent. Code after `yield` runs after the tests that used it, including after a failure. `product_agent.close()` closes the MongoDB client.
 
-The metric-example files do not request these fixtures. Each of those tests creates its own `ProductAgent` inside the function. A skipped test does not trigger its fixtures. With `RUN_EVALUATIONS` unset, pytest skips every test and does not create settings, the dataset, or the agent.
+The metric-example files do not request these fixtures. Each of those tests creates its own `ProductAgent` inside the function.
 
 ## 7. Markers
 
 ```python
-pytestmark = [
-    pytest.mark.evaluation,
-    pytest.mark.skipif(
-        os.getenv("RUN_EVALUATIONS") != "1",
-        reason="Set RUN_EVALUATIONS=1 to run live MongoDB and OpenAI tests.",
-    ),
-]
+pytestmark = pytest.mark.evaluation
 ```
 
-`pytestmark` applies those labels to every test in the file. `evaluation` is the label registered in `pytest.ini`. This command runs only tests with that label:
+`pytestmark` applies that label to every test in the file. `evaluation` is the label registered in `pytest.ini`. This command runs only tests with that label:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -m evaluation
 ```
 
-`skipif` skips the test when `RUN_EVALUATIONS` is not `1`. A skip is not a failure. The function is not called.
+A normal `pytest` command runs the tests. No environment variable is required.
 
 ## 8. The command, and what is initialized
 
 Run one product question:
 
 ```powershell
-$env:RUN_EVALUATIONS = "1"
 .\.venv\Scripts\python.exe -m pytest tests/test_product_agent.py::test_size -q
 ```
 
 Before `test_size` runs, pytest initializes the process in this order.
 
-**A. PowerShell.** `$env:RUN_EVALUATIONS = "1"` sets one variable for this window. The tests read it later and decide not to skip.
+**A. PowerShell.** The command is run from the project folder. No extra environment variable is required.
 
 **B. Python from `.venv`.** `python -m pytest` starts pytest with the installed packages: pytest, pytest-html, allure-pytest, DeepEval, LangChain, LangGraph, and PyMongo.
 
@@ -206,7 +199,7 @@ Before `test_size` runs, pytest initializes the process in this order.
 
 **D. Import.** Pytest imports `tests/conftest.py` and `tests/test_product_agent.py`. Importing `product_agent.config` calls `load_dotenv()`, so values from `.env` enter the process environment. Nothing has opened MongoDB yet. `Settings()` has not been constructed yet. The agent has not been constructed yet.
 
-**E. Collection.** Pytest reads the file and lists every `test_` function. For this command the list is only `test_size`. It evaluates `skipif`. Because `RUN_EVALUATIONS` is `1`, the test is not skipped.
+**E. Collection.** Pytest reads the file and lists every `test_` function. For this command the list is only `test_size`.
 
 **F. Session fixture `settings`.** Pytest calls `settings()` once. `Settings` reads `OPENAI_API_KEY`, `MONGODB_URI` (default `mongodb://localhost:27017`), `MONGODB_DATABASE` (default `product_agent`), `MONGODB_COLLECTION` (default `ProductUPC`), `PRODUCT_AGENT_MODEL` (default `gpt-4.1-mini`), `EVALUATION_MODEL` (default `gpt-4.1-mini`), and `PRODUCT_AGENT_SAMPLE_UPC` (default `0001960004580`). The object is frozen. It does not connect to anything.
 
@@ -387,7 +380,7 @@ Each other file in `tests/` is one metric example. The file name and the functio
 
 "Offline" means one test case and `evaluate`. "Online" means a DeepEval dataset iterator. "Synthetic" means the inputs are prepared in the test.
 
-These files use the same `pytestmark`, so they stay skipped until `RUN_EVALUATIONS=1`.
+These files use the same `evaluation` marker.
 
 `test_safety_prompt_injection` and `test_safety_unsafe_output` import `deepeval.classifiers`. That module is not in DeepEval 4.1.5. Those two tests fail with `ModuleNotFoundError` before a score is computed.
 
@@ -426,37 +419,27 @@ List tests. This does not open MongoDB and does not call OpenAI. It does import 
 .\.venv\Scripts\python.exe -m pytest --collect-only -q
 ```
 
-Safe default. All 37 tests are collected and skipped. Fixtures are not created.
+Run every test. This calls MongoDB and OpenAI.
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest -q
-```
-
-Every test:
-
-```powershell
-$env:RUN_EVALUATIONS = "1"
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
 Only tests marked `evaluation` (in this project, that is the same 37 tests):
 
 ```powershell
-$env:RUN_EVALUATIONS = "1"
 .\.venv\Scripts\python.exe -m pytest -m evaluation -q
 ```
 
 One product question:
 
 ```powershell
-$env:RUN_EVALUATIONS = "1"
 .\.venv\Scripts\python.exe -m pytest tests/test_product_agent.py::test_size -q
 ```
 
 One metric example:
 
 ```powershell
-$env:RUN_EVALUATIONS = "1"
 .\.venv\Scripts\python.exe -m pytest tests/test_answer_relevancy_offline.py -q
 ```
 
@@ -488,4 +471,4 @@ Pytest collects the new function because of the `test_` name. There is no separa
 
 ## 16. A short way to say it
 
-`python -m pytest` reads `pytest.ini`, imports `tests/`, and collects every `test_` function. Importing config loads `.env`. With `RUN_EVALUATIONS=1`, the product file then builds one `Settings`, one dataset from MongoDB, and one `ProductAgent` with its graph and tools. `test_size` selects the size Golden, runs the agent, builds an `LLMTestCase`, and `assert_test` fails that function if any score is below its threshold. Pytest writes `pytest-report.html` and `allure-results/`. `allure generate` and `allure open` turn the raw Allure files into a page.
+`python -m pytest` reads `pytest.ini`, imports `tests/`, and collects every `test_` function. Importing config loads `.env`. The product file then builds one `Settings`, one dataset from MongoDB, and one `ProductAgent` with its graph and tools. `test_size` selects the size Golden, runs the agent, builds an `LLMTestCase`, and `assert_test` fails that function if any score is below its threshold. Pytest writes `pytest-report.html` and `allure-results/`. `allure generate` and `allure open` turn the raw Allure files into a page.

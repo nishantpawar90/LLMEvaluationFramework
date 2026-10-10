@@ -4,20 +4,12 @@ Pytest collects this file because the file name starts with test_.
 Pytest runs test_turn_relevancy because the function name starts with test_.
 """
 
-import os
-
 import pytest
 from deepeval import evaluate
 from deepeval.metrics import TurnRelevancyMetric
 from deepeval.test_case import Turn, ConversationalTestCase
 
-pytestmark = [
-    pytest.mark.evaluation,
-    pytest.mark.skipif(
-        os.getenv("RUN_EVALUATIONS") != "1",
-        reason="Set RUN_EVALUATIONS=1 to run live MongoDB and OpenAI tests.",
-    ),
-]
+pytestmark = pytest.mark.evaluation
 
 
 def test_turn_relevancy():

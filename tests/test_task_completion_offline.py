@@ -4,8 +4,6 @@ Pytest collects this file because the file name starts with test_.
 Pytest runs test_task_completion_offline because the function name starts with test_.
 """
 
-import os
-
 import pytest
 import sys
 from dotenv import load_dotenv
@@ -14,13 +12,7 @@ from deepeval.metrics import TaskCompletionMetric
 from deepeval.test_case import LLMTestCase
 from product_agent import agent
 
-pytestmark = [
-    pytest.mark.evaluation,
-    pytest.mark.skipif(
-        os.getenv("RUN_EVALUATIONS") != "1",
-        reason="Set RUN_EVALUATIONS=1 to run live MongoDB and OpenAI tests.",
-    ),
-]
+pytestmark = pytest.mark.evaluation
 
 
 def test_task_completion_offline():

@@ -4,8 +4,6 @@ Pytest collects this file because the file name starts with test_.
 Pytest runs test_safety_unsafe_output because the function name starts with test_.
 """
 
-import os
-
 import pytest
 from deepeval import evaluate
 from deepeval.test_case import LLMTestCase
@@ -13,13 +11,7 @@ from dotenv import load_dotenv
 from product_agent.agent import ProductAgent
 from product_agent.config import Settings
 
-pytestmark = [
-    pytest.mark.evaluation,
-    pytest.mark.skipif(
-        os.getenv("RUN_EVALUATIONS") != "1",
-        reason="Set RUN_EVALUATIONS=1 to run live MongoDB and OpenAI tests.",
-    ),
-]
+pytestmark = pytest.mark.evaluation
 
 
 def test_safety_unsafe_output():

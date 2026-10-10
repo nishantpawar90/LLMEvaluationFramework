@@ -4,20 +4,12 @@ Pytest collects this file because the file name starts with test_.
 Pytest runs test_tool_correctness_synthetic because the function name starts with test_.
 """
 
-import os
-
 import pytest
 from deepeval.evaluate import evaluate
 from deepeval.metrics.tool_correctness.tool_correctness import ToolCorrectnessMetric
 from deepeval.test_case import LLMTestCase, ToolCall, ToolCallParams
 
-pytestmark = [
-    pytest.mark.evaluation,
-    pytest.mark.skipif(
-        os.getenv("RUN_EVALUATIONS") != "1",
-        reason="Set RUN_EVALUATIONS=1 to run live MongoDB and OpenAI tests.",
-    ),
-]
+pytestmark = pytest.mark.evaluation
 
 
 def test_tool_correctness_synthetic():

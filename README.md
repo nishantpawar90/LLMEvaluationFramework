@@ -52,7 +52,6 @@ key. `ToolCorrectnessMetric` is configured for exact tool matching and
    `tests/test_answer_relevancy_offline.py`.
 
    ```powershell
-   $env:RUN_EVALUATIONS = "1"
    python -m pytest -q
    ```
 

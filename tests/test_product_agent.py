@@ -4,21 +4,13 @@ Pytest collects this file because the name starts with test_.
 Pytest runs each function below because the name starts with test_.
 """
 
-import os
-
 import pytest
 from deepeval import assert_test
 
 from product_agent.evaluation.cases import build_test_case
 from product_agent.evaluation.metrics import build_metrics
 
-pytestmark = [
-    pytest.mark.evaluation,
-    pytest.mark.skipif(
-        os.getenv("RUN_EVALUATIONS") != "1",
-        reason="Set RUN_EVALUATIONS=1 to run live MongoDB and OpenAI tests.",
-    ),
-]
+pytestmark = pytest.mark.evaluation
 
 
 def _check_product_answer(agent, evaluation_dataset, settings, name: str) -> None:

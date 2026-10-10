@@ -59,8 +59,17 @@ key. `ToolCorrectnessMetric` is configured for exact tool matching and
 A passing product test means every DeepEval score for that question is at or
 above its limit. The exact LLM-judged scores can vary slightly.
 
-See [PYTEST_NATIVE_GUIDE.md](PYTEST_NATIVE_GUIDE.md) for the naming rule and
-how to run one test.
+[PYTEST_NATIVE_GUIDE.md](PYTEST_NATIVE_GUIDE.md) is the single explanation:
+pytest discovery, `pytest.ini`, what `python -m pytest` initializes, the path
+of one test from the command to the result, and both reports.
+
+`pytest.ini` writes `pytest-report.html`, which opens directly, and raw files
+in `allure-results/`. Build and open the Allure page with:
+
+```powershell
+allure generate allure-results -o allure-report --clean
+allure open allure-report
+```
 
 `ProductUPC.txt` was not present in the supplied workspace, so this project
 does not embed a copied product document or claim its individual field values.

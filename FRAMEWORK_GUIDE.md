@@ -1,105 +1,100 @@
-# Simple Python Evaluation Framework
+# Pytest-Native Product Agent Evaluation Framework
 
-This framework runs the existing test cases in `product_agent/evaluation/myEvaluations`.
-The case files are left where they are and do not need to be rewritten.
+## Purpose
 
-## The Java/TestNG comparison
+This is an integration/evaluation suite for a live product-information agent. Tests call OpenAI through LangGraph, retrieve product facts from MongoDB, and use DeepEval to score results.
 
-| Java automation idea | This project |
+```text
+pytest -> fixtures -> parametrized Golden -> ProductAgent -> DeepEval assertion
+```
+
+There is no custom script runner in the supported path.
+
+## Project layout
+
+```text
+DeepEvalImp/
+├── product_agent/
+│   ├── agent.py                 # LangGraph agent and AgentResult
+│   ├── config.py                # environment-based settings
+│   ├── mongo_client.py          # safe MongoDB repository boundary
+│   ├── tools.py                 # controlled LLM-callable tools
+│   └── evaluation/
+│       ├── dataset.py           # 15 live-data Goldens
+│       ├── metrics.py           # DeepEval metrics and thresholds
+│       ├── cases.py             # Golden + AgentResult -> LLMTestCase
+│       └── myEvaluations/       # legacy examples, not pytest tests
+├── tests/
+│   ├── conftest.py              # shared fixtures
+│   └── test_product_agent_evaluation.py
+├── pytest.ini                   # discovery, marker, report defaults
+├── requirements.txt
+├── .env.example
+├── CODE_WALKTHROUGH.md
+└── README.md
+```
+
+## TestNG-to-pytest mapping
+
+| TestNG concept | This framework's pytest equivalent |
 | --- | --- |
-| TestNG runner | `pytest` |
-| A TestNG test class or `@Test` | One existing Python file in `myEvaluations` |
-| Test suite selection | `runner.py --run` or `runner.py --all` |
-| Shared application behavior | `ProductAgent` and its product tools |
+| `@Test` | `test_product_agent_meets_quality_thresholds` |
+| `@DataProvider` | `@pytest.mark.parametrize` with `GOLDEN_NAMES` |
+| `@BeforeSuite` / `@AfterSuite` | Session-scoped fixture when needed |
+| `@BeforeClass` / `@AfterClass` | Module-scoped `agent` fixture with `yield` teardown |
+| TestNG groups | `@pytest.mark.evaluation` |
+| `testng.xml` | `pytest.ini` plus pytest command-line selection |
+| `Assert` | `deepeval.assert_test(...)`, which raises on a metric failure |
+| Extent Reports | `pytest-html`; Allure is also configured |
 
-The `ProductAgent` is already the shared application abstraction. These cases do
-not drive browser pages, so a browser-style Page Object Model would add complexity
-without helping. Instead, each original case is run in its own process. This keeps
-its current behavior while preventing top-level code in a case from running just
-because pytest imports files during collection.
+## Safe execution
 
-## Files to know
-
-- `product_agent/evaluation/myEvaluations/` contains the original evaluation cases.
-- `product_agent/evaluation/runner.py` discovers and launches those cases.
-- `tests/test_evaluation_framework.py` connects the cases to pytest and checks the
-  runner itself.
-- `pytest.ini` limits default discovery to the framework's `tests` directory, so
-  existing integration tests do not unexpectedly call external services.
-- `pytest-html` creates a self-contained `pytest-report.html` report after each
-  pytest run. The generated report is ignored by Git.
-- `allure-pytest` writes Allure test results to `allure-results/`. The generated
-  results and rendered report are ignored by Git.
-
-## First steps
-
-Open a terminal in the project directory and activate the project's virtual
-environment if it is not already active. Install dependencies when needed:
+Live evaluation requires MongoDB and an OpenAI key, so tests are skipped by default:
 
 ```powershell
-\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pytest -q
 ```
 
-List the available evaluation cases:
-
-```powershell
-python -m product_agent.evaluation.runner --list
-```
-
-Run one case by its filename:
-
-```powershell
-python -m product_agent.evaluation.runner --run TaskCompletionMetricOffline.py
-```
-
-Run every case, one after another:
-
-```powershell
-python -m product_agent.evaluation.runner --all
-```
-
-Check the framework and list the pytest evaluation tests without running them:
-
-```powershell
-pytest
-```
-
-Open `pytest-report.html` in a browser to view the test results. The report
-includes passed framework checks and the skipped external-service cases.
-
-Allure is the richer report option. After installing the Allure command-line
-tool and ensuring Java is available, run pytest and then serve the report:
-
-```powershell
-pytest
-allure serve allure-results
-```
-
-To create a browsable report directory instead of starting a temporary server:
-
-```powershell
-allure generate allure-results --clean -o allure-report
-```
-
-Then open `allure-report/index.html`. The pytest plugin creates result data; the
-Allure command-line tool renders that data into the HTML report. Allure shows
-pytest's pass/fail status; it does not by itself assert that a DeepEval metric
-met its threshold.
-
-To run the evaluation cases through pytest, explicitly opt in:
+Opt in for the current PowerShell session:
 
 ```powershell
 $env:RUN_EVALUATIONS = "1"
-pytest
-$env:RUN_EVALUATIONS = "0"
+.\.venv\Scripts\python.exe -m pytest -m evaluation -q
 ```
 
-## Before running evaluations
+Pytest executes 15 independent test cases, one per Golden. To run only one case while debugging:
 
-Many cases use an LLM judge, and some call `ProductAgent` and MongoDB. They may
-need a valid `OPENAI_API_KEY`, the configured model, and a reachable MongoDB
-instance. A case failing because a service or credential is unavailable does not
-necessarily mean the runner is broken. Start with one case using `--run` before
-running the full collection. The word "Offline" in a case filename does not
-guarantee that it avoids all external services.
+```powershell
+$env:RUN_EVALUATIONS = "1"
+.\.venv\Scripts\python.exe -m pytest `
+  "tests/test_product_agent_evaluation.py::test_product_agent_meets_quality_thresholds[size]" -q
+```
+
+## Reports
+
+`pytest.ini` creates `pytest-report.html` and `allure-results/`. If the Allure command-line tool is installed, render the latter with:
+
+```powershell
+allure serve allure-results
+```
+
+Generated reports and local runtime files are excluded from Git.
+
+## Adding a scenario
+
+1. Add a Golden in `product_agent/evaluation/dataset.py`.
+2. Add the Golden name to `GOLDEN_NAMES` in `tests/test_product_agent_evaluation.py`.
+3. Add or adjust a metric in `metrics.py` if needed.
+4. Run the single test node first, then the marker suite.
+
+Do not create a standalone script or subprocess runner for normal product coverage. Keep scenarios in the dataset so pytest discovers and reports them consistently.
+
+## Troubleshooting
+
+| Symptom | Action |
+| --- | --- |
+| All 15 tests are skipped | Set `$env:RUN_EVALUATIONS = "1"`. |
+| `OPENAI_API_KEY is required` | Put the key in `.env` or the process environment. |
+| MongoDB connection error | Start MongoDB and load the sample UPC record. |
+| One named case fails | Run that node ID alone and inspect the DeepEval reason. |
+| Collection fails | Use `.\.venv\Scripts\python.exe -m pytest --collect-only -q`. |

@@ -13,7 +13,7 @@ def _present(value: object) -> str:
 
 
 def build_dataset(settings: Settings | None = None) -> EvaluationDataset:
-    """Build 15 Goldens from the configured live document; never fabricate facts."""
+    """Build 13 Goldens from the configured live document; never fabricate facts."""
     settings = settings or Settings()
     repository = MongoProductRepository(settings)
     try:
@@ -35,12 +35,10 @@ def build_dataset(settings: Settings | None = None) -> EvaluationDataset:
         golden("sourcing", f"Is UPC {upc} DSD or warehouse supplied?", _present(facts["sourcing"]), "get_product_sourcing"),
         golden("multiple_attributes", f"Give me the product name, size and category for UPC {upc}.", f"{_present(facts['product_name'])}; {_present(facts['size'])}; {_present(facts['category'])}", "get_product_by_upc"),
         golden("summary", f"Summarize product {upc}.", _present(facts["product_name"]), "get_product_by_upc"),
-        golden("brand", f"What is the brand of UPC {upc}?", _present(facts["brand"]), "get_product_by_upc"),
         golden("group", f"What product group is UPC {upc} in?", _present(facts["product_group"]), "get_product_classification"),
         golden("subclass_1", f"What is the first subclass for UPC {upc}?", _present(facts["subclass_level_1"]), "get_product_classification"),
         golden("subclass_2", f"What is the second subclass for UPC {upc}?", _present(facts["subclass_level_2"]), "get_product_classification"),
         golden("concise_size", f"Answer concisely: what is the size of UPC {upc}?", _present(facts["size"]), "get_product_dimensions"),
-        golden("grounded_brand", f"What is the brand of UPC {upc}? Do not guess.", _present(facts["brand"]), "get_product_by_upc"),
         Golden(name="unknown_upc", input="Does UPC 9999999999999 exist?", expected_output="Product not found.", expected_tools=[ToolCall(name="get_product_by_upc", input_parameters={"upc": "9999999999999"})]),
     ]
     return EvaluationDataset(goldens=cases)

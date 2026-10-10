@@ -1,58 +1,51 @@
-# Pytest-native evaluation framework
+# How these tests work
 
-The product-agent evaluation suite uses ordinary pytest discovery rather than
-launching standalone scripts through subprocesses.
+Pytest finds a test only when both names follow the same rule.
+
+1. The file name starts with `test_`.
+2. The function name starts with `test_`.
+
+Example:
 
 ```text
-pytest
-  -> tests/test_product_agent_evaluation.py
-  -> shared fixtures in tests/conftest.py
-  -> one parametrized test per Golden
-  -> ProductAgent.run()
-  -> DeepEval assert_test()
+tests/test_answer_relevancy_offline.py
+    def test_answer_relevancy_offline():
 ```
 
-## Files and responsibilities
+Pytest does not run a Python file just because it sits in the project. A file such as `AnswerRelevancyMetricOffline.py` is invisible to pytest, because the name does not start with `test_`.
 
-| File | Responsibility |
+## Where to look
+
+| File | What it is |
 | --- | --- |
-| `tests/conftest.py` | Creates shared settings, the dataset, and one reusable agent fixture. The agent is always closed during teardown. |
-| `tests/test_product_agent_evaluation.py` | Declares the 15 Golden names and runs one pytest case per name. |
-| `product_agent/evaluation/dataset.py` | Builds Goldens from the live MongoDB product record. |
-| `product_agent/evaluation/cases.py` | Combines an expected Golden and an actual agent result into an `LLMTestCase`. |
-| `product_agent/evaluation/metrics.py` | Creates fresh DeepEval metric instances and thresholds for each case. |
-| `pytest.ini` | Registers the `evaluation` marker and report defaults. |
+| `tests/test_product_agent.py` | One `test_` function for each product question, such as `test_size` and `test_reviews`. |
+| `tests/test_answer_relevancy_offline.py` and the other `tests/test_*.py` files | One metric example each. Each file has one `test_` function. |
+| `tests/conftest.py` | Shared setup. Pytest reads this file automatically. It is not a test, because the name does not start with `test_`. |
+| `product_agent/evaluation/dataset.py` | The question and the expected answer for each product test. |
+| `product_agent/evaluation/metrics.py` | The DeepEval scores used by the product tests. |
 
-## Why this is simpler
+`_check_product_answer` in `tests/test_product_agent.py` is a helper. Pytest ignores it because the name starts with `_`, not `test_`. Each product question still has its own `test_` function.
 
-- Every Golden is a normal pytest node, such as `...[size]`.
-- A failed DeepEval threshold fails the exact pytest case through
-  `deepeval.assert_test`.
-- The suite does not need a custom subprocess runner.
-- A module-scoped fixture starts one agent for the suite and closes it once.
-- The default `pytest` command is safe: external tests remain skipped until
-  `RUN_EVALUATIONS=1` is supplied.
+## What a product test does
 
-## Run commands
+`test_size` asks the agent for the product size, then DeepEval scores the answer. `assert_test(...)` makes that pytest test fail when a score is below its limit.
 
-Check collection without live services:
+The tests call MongoDB and OpenAI, so they stay skipped until you opt in:
+
+```powershell
+$env:RUN_EVALUATIONS = "1"
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+See the names pytest found, without calling MongoDB or OpenAI:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest --collect-only -q
 ```
 
-Run the default safe command:
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest -q
-```
-
-Run the live suite after starting MongoDB and setting `OPENAI_API_KEY`:
+Run one test:
 
 ```powershell
 $env:RUN_EVALUATIONS = "1"
-.\.venv\Scripts\python.exe -m pytest -m evaluation -q
+.\.venv\Scripts\python.exe -m pytest tests/test_product_agent.py::test_size -q
 ```
-
-The live command calls MongoDB, OpenAI, and LLM-judged DeepEval metrics. It can
-consume API usage and take several minutes.

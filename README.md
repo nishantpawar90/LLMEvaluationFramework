@@ -46,20 +46,21 @@ key. `ToolCorrectnessMetric` is configured for exact tool matching and
    python -m product_agent.agent "What is the size of UPC 0001960004580?"
    ```
 
-5. Run the pytest-native evaluation suite (15 Goldens generated from the actual
-   MongoDB document, so expected values are never fabricated):
+5. Run the tests. Every test file and every test function starts with `test_`.
+   The product questions are the functions in `tests/test_product_agent.py`.
+   Each metric example is its own file, such as
+   `tests/test_answer_relevancy_offline.py`.
 
    ```powershell
    $env:RUN_EVALUATIONS = "1"
-   python -m pytest -m evaluation -q
+   python -m pytest -q
    ```
 
-Each Golden appears as an individual pytest test case. A passing run shows all
-metric scores at or above their configured thresholds; the exact
-LLM-judged scores/reasons can vary slightly.
+A passing product test means every DeepEval score for that question is at or
+above its limit. The exact LLM-judged scores can vary slightly.
 
-See [PYTEST_NATIVE_GUIDE.md](PYTEST_NATIVE_GUIDE.md) for the fixture,
-parameterization, and execution design.
+See [PYTEST_NATIVE_GUIDE.md](PYTEST_NATIVE_GUIDE.md) for the naming rule and
+how to run one test.
 
 `ProductUPC.txt` was not present in the supplied workspace, so this project
 does not embed a copied product document or claim its individual field values.

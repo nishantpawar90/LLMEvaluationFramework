@@ -5,17 +5,18 @@ This project is an AI quality-engineering proof of concept. A LangGraph agent an
 ## End-to-end flow
 
 ```text
-pytest parametrized case
-  -> shared ProductAgent fixture
-  -> LangGraph: agent -> controlled tool -> agent
-  -> MongoDB product lookup
-  -> AgentResult
-  -> DeepEval LLMTestCase
-  -> deepeval.assert_test
-  -> pytest pass or failure
+tests/test_product_agent.py
+  test_size()
+    -> shared ProductAgent fixture
+    -> LangGraph: agent -> controlled tool -> agent
+    -> MongoDB product lookup
+    -> AgentResult
+    -> DeepEval LLMTestCase
+    -> deepeval.assert_test
+    -> pytest pass or failure
 ```
 
-Each Golden is one normal pytest test case. There is no subprocess runner or standalone-script execution in the supported suite.
+Pytest runs a function only when the file name and the function name both start with `test_`.
 
 ## Application code
 
@@ -55,7 +56,7 @@ START -> agent -> tools (when requested) -> agent -> END
 
 ### `product_agent/evaluation/dataset.py`
 
-`build_dataset()` reads the configured product record and creates 15 DeepEval Goldens. Expected product values come from the live source record, so product facts are not duplicated or fabricated in source code.
+`build_dataset()` reads the configured product record and creates 13 DeepEval Goldens. Expected product values come from the live source record, so product facts are not duplicated or fabricated in source code.
 
 Each Golden has a stable case name, a question, expected answer text, and the expected tool name/UPC argument.
 
@@ -79,28 +80,32 @@ Fixtures replace TestNG-style setup/teardown:
 | --- | --- | --- |
 | `settings` | `session` | One immutable configuration snapshot. |
 | `evaluation_dataset` | `module` | Build Goldens once from MongoDB. |
-| `agent` | `module` | Create one agent and close it reliably after the suite. |
-| `golden` | `function` | Resolve the requested Golden by name. |
+| `agent` | `module` | Create one agent and close it reliably after the product tests. |
 
-The `agent` fixture uses `yield`, so `agent.close()` runs during teardown even if a test fails.
+The `agent` fixture uses `yield`, so `agent.close()` runs during teardown even if a test fails. `conftest.py` is not a test file. Its name does not start with `test_`.
 
-### `tests/test_product_agent_evaluation.py`
+### `tests/test_product_agent.py`
 
-`GOLDEN_NAMES` is the readable list of 15 business scenarios. `@pytest.mark.parametrize("golden_name", GOLDEN_NAMES)` generates one pytest node per scenario:
+Each product question is its own function:
 
 ```text
-test_product_agent_meets_quality_thresholds[size]
-test_product_agent_meets_quality_thresholds[unknown_upc]
+test_basic_lookup
+test_size
+test_category
+test_classification
+test_reviews
+test_sourcing
+test_multiple_attributes
+test_summary
+test_group
+test_subclass_1
+test_subclass_2
+test_concise_size
+test_unknown_upc
 ```
 
-The test runs the agent, converts the outcome to an `LLMTestCase`, and calls:
+`_check_product_answer` is a helper. Pytest does not collect it. Each `test_` function calls that helper, builds an `LLMTestCase`, and calls `assert_test(...)`. A score below the limit fails that function.
 
-```python
-assert_test(test_case, metrics=build_metrics(settings), run_async=False)
-```
+### Metric example files
 
-Unlike a plain `evaluate(...)` call, `assert_test(...)` raises an assertion failure when a metric misses its threshold. Pytest reports the exact Golden as failed.
-
-## Legacy examples
-
-`product_agent/evaluation/myEvaluations/` contains retained standalone DeepEval experiments. They are examples only and are not discovered by pytest. See that folder's README before using them.
+Each former standalone example is now a normal pytest file under `tests/`. For example, `tests/test_answer_relevancy_offline.py` defines `test_answer_relevancy_offline`. Pytest finds these files by name. Nothing loads a folder of scripts and runs them one by one.

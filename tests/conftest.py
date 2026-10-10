@@ -25,12 +25,3 @@ def agent(settings: Settings):
     product_agent = ProductAgent(settings)
     yield product_agent
     product_agent.close()
-
-
-@pytest.fixture
-def golden(evaluation_dataset, golden_name: str):
-    """Return the requested Golden by name with a helpful error if it is absent."""
-    for candidate in evaluation_dataset.goldens:
-        if candidate.name == golden_name:
-            return candidate
-    raise ValueError(f"Unknown evaluation Golden: {golden_name}")

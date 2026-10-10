@@ -46,18 +46,20 @@ key. `ToolCorrectnessMetric` is configured for exact tool matching and
    python -m product_agent.agent "What is the size of UPC 0001960004580?"
    ```
 
-5. Run the local evaluation (15 Goldens generated from the actual MongoDB
-   document, so expected values are never fabricated):
+5. Run the pytest-native evaluation suite (15 Goldens generated from the actual
+   MongoDB document, so expected values are never fabricated):
 
    ```powershell
-   python test_product_agent.py
-   # or
-   pytest -q
+   $env:RUN_EVALUATIONS = "1"
+   python -m pytest -m evaluation -q
    ```
 
-Expected output is DeepEval's per-case metric table followed by an evaluation
-summary. A passing run shows scores at or above the configured 0.70 thresholds;
-the exact scores/reasons depend on the evaluator model.
+Each Golden appears as an individual pytest test case. A passing run shows all
+metric scores at or above their configured thresholds; the exact
+LLM-judged scores/reasons can vary slightly.
+
+See [PYTEST_NATIVE_GUIDE.md](PYTEST_NATIVE_GUIDE.md) for the fixture,
+parameterization, and execution design.
 
 `ProductUPC.txt` was not present in the supplied workspace, so this project
 does not embed a copied product document or claim its individual field values.

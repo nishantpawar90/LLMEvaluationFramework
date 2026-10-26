@@ -1,0 +1,10 @@
+Capital of India is New Delhi.
+Capital of United States is Washington, D.C.
+Capital of France is Paris.
+Capital of Japan is Tokyo.
+Capital of Germany is Berlin.
+Capital of Canada is Ottawa.
+Capital of Australia is Canberra.
+Capital of Maharashtra is Mumbai.
+Capital of Karnataka is Bengaluru.
+Capital of Tamil Nadu is Chennai.

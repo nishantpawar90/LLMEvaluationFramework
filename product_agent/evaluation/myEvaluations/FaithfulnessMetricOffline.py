@@ -20,8 +20,6 @@ que = "get me the review eligibility for UPC 0001960004580?"
 # Build a test case using live ProductAgent if OPENAI key is available; otherwise use a synthetic fallback
 agent = ProductAgent()
 result = agent.run(que)
-tools_called = result.tool_calls
-expected_tools = [ToolCall(name="get_product_review_eligibility", input_parameters={"upc": settings.sample_upc})]
 test_case = LLMTestCase(input=que, actual_output=result.answer,retrieval_context=result.tool_context)
 
 print("OUTPUT :: " + str(result.answer))

@@ -68,7 +68,7 @@ class ProductAgent:
                 context.append(text)
                 if message.tool_call_id in calls_by_id:
                     calls_by_id[message.tool_call_id].output = text
-        update_current_trace(input=question, output=answer, tools_called=list(calls_by_id.values()))
+        update_current_trace(input=question, output=answer, tools_called=list(calls_by_id.values()),retrieval_context=context)
         return AgentResult(answer=answer, tool_calls=list(calls_by_id.values()), tool_context=context)
 
     def close(self) -> None:

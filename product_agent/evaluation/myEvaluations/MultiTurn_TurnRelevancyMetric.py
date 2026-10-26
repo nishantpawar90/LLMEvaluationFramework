@@ -1,7 +1,6 @@
-from deepeval import evaluate
+from deepeval.evaluate import evaluate
 from deepeval.metrics import TurnRelevancyMetric
 from deepeval.test_case import Turn, ConversationalTestCase
-
 
 test_case = ConversationalTestCase(
     name="turn-relevancy-product-test",
@@ -21,7 +20,6 @@ test_case = ConversationalTestCase(
             role="user",
             content="I need the product details for UPC 0001960004580."
         ),
-
         Turn(
             role="assistant",
             content=(
@@ -49,15 +47,12 @@ metric = TurnRelevancyMetric(
     verbose_mode=True
 )
 
-
 print("Running TurnRelevancyMetric...")
 
 result = evaluate(
     test_cases=[test_case],
-    metrics=[metric],
-    identifier="Turn Relevancy Product Test"
+    metrics=[metric]
 )
-
 
 print("\nDone.")
 print(result)

@@ -19,7 +19,8 @@ test_case = LLMTestCase(input=que, tools_called=tools_called, expected_tools=exp
 
 print("OUTPUT :: " + str(result.answer))
 
-metric = ToolCorrectnessMetric(threshold=0.7, evaluation_params=[ToolCallParams.INPUT_PARAMETERS], async_mode=False, model="gpt-4o")
+metric = ToolCorrectnessMetric(threshold=0.7, async_mode=False,
+                               model="gpt-4o")
 
 print("Running ToolCorrectnessMetric...")
 result = evaluate(test_cases=[test_case], metrics=[metric])

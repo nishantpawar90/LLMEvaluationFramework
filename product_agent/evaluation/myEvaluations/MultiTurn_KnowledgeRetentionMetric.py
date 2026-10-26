@@ -1,4 +1,4 @@
-from deepeval import evaluate
+from deepeval.evaluate import evaluate
 from deepeval.metrics import KnowledgeRetentionMetric
 from deepeval.test_case import Turn, ConversationalTestCase
 
@@ -75,8 +75,7 @@ print("Running KnowledgeRetentionMetric...")
 
 result = evaluate(
     test_cases=[test_case],
-    metrics=[metric],
-    identifier="Knowledge Retention - Product Agent"
+    metrics=[metric]
 )
 
 print("\nDone.")

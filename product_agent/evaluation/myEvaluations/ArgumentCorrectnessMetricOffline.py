@@ -21,6 +21,10 @@ testcase = LLMTestCase(input=que,
                        tools_called=actual_tools_called, actual_output=result.answer)
 
 print("OUTPUT :: " + str(result.answer))
+argumentCorrectnessMetric.measure(testcase)
+print(f"Score ::  {argumentCorrectnessMetric.score}")
+print(argumentCorrectnessMetric.reason)
+print(argumentCorrectnessMetric.is_successful())
 
 print("Running ArgumentCorrectnessMetric...")
 result = evaluate(test_cases=[testcase], metrics=[argumentCorrectnessMetric])

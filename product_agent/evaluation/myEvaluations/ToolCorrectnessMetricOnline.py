@@ -29,7 +29,7 @@ toolCorrectness = ToolCorrectnessMetric(threshold=0.7, async_mode=False)
 dataSet = EvaluationDataset(goldens=[
     Golden(
         input="Get whether a product is warehouse or DSD supplied for UPC 0001960004580??",
-        expected_tools=[ToolCall(name="get_product_sourcing", input_parameters={"upc": "0001960004580"})],
+        expected_tools=[ToolCall(name="get_product_sourcing", input_parameters={"upc": "0001960004581"})],
     )
 ])
 for golden in dataSet.evals_iterator(metrics=[toolCorrectness]):

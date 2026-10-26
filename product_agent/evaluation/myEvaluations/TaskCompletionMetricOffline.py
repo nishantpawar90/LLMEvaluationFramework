@@ -20,12 +20,13 @@ result = agent_instance.run(que)
 
 print("ACTUAL OUTPUT:")
 print(result.answer)
+print(result.tool_context)
 
 print("TOOL CALLS:")
 for call in result.tool_calls:
     print(call.model_dump())
 
-test_case = LLMTestCase(input=que, actualOutput=result.answer)
+test_case = LLMTestCase(input=que,actual_output=result.answer)
 metric = TaskCompletionMetric(threshold=0.7, model="gpt-4o")
 
 evaluate(test_cases=[test_case], metrics=[metric])

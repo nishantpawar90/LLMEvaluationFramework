@@ -10,9 +10,7 @@ from dotenv import load_dotenv
 from product_agent.config import Settings
 from product_agent.agent import ProductAgent
 
-
 load_dotenv()
-
 
 # ---------------------------------------------------------
 # Create Product Agent
@@ -27,7 +25,6 @@ agent = ProductAgent(settings)
 # ---------------------------------------------------------
 
 def chat(user_msg, history):
-
     result = agent.run(user_msg)
 
     # ProductAgent.run() returns AgentResult
@@ -60,7 +57,6 @@ for user_msg in [
     "What was the size you just mentioned?",
     "And what class is it?"
 ]:
-
     reply, history, _ = chat(user_msg, history)
 
     turns.append(
@@ -76,7 +72,6 @@ for user_msg in [
             content=reply
         )
     )
-
 
 # ---------------------------------------------------------
 # Conversational GEval
@@ -103,7 +98,6 @@ correctness = ConversationalGEval(
     ]
 )
 
-
 # ---------------------------------------------------------
 # Conversational Test Case
 # ---------------------------------------------------------
@@ -111,7 +105,6 @@ correctness = ConversationalGEval(
 test_case = ConversationalTestCase(
     turns=turns
 )
-
 
 # ---------------------------------------------------------
 # Evaluate

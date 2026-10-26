@@ -21,7 +21,7 @@ print("OUTPUT :: " + str(result.answer))
 metric = PromptAlignmentMetric(
     threshold=0.7,
     model="gpt-4o",
-    include_reason=True,prompt_instructions="Give response in a rudely manner."
+    include_reason=True,prompt_instructions=["Give response in a rudely manner."]
 )
 
 print("Running PromptAlignmentMetric...")
